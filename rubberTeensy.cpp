@@ -100,6 +100,27 @@ void RubberTeensy::OpenCMD(int8_t method, bool admin){
     Keyboard.end();
 }
 
+/* Run a command 
+ * command - The command string to execute 
+ * method:
+ * 0 - Call OpenCMD then Write 
+ * 1 - Open the run dialog box and execute the command
+ * 2 - Open the run dialog box and run cmd with the command passed in through the /C flag
+ * 3 - Write wscript in temp folder then execute with hidden window  
+ */ 
+
+void RubberTeensy::RunCommand(String command, int8_t method){
+    switch(method){
+    case 0:
+        this->OpenCMD(); 
+        this->Write(command);
+        this->Write("exit"); 
+    default:
+        break; 
+    }
+}
+
+
 /* Hide the current window by dragging it down */ 
 void RubberTeensy::HideWindow(){
     Keyboard.begin();
@@ -132,19 +153,17 @@ void RubberTeensy::RepeatKey(char key, int repeat){
 /* Blink */ 
 void RubberTeensy::Blink(int duration){
     digitalWrite(_LED_Pin, HIGH); 
-    delay(500); 
+    delay(duration); 
     digitalWrite(_LED_Pin, LOW); 
 }
 
-void RubberTeensy::Write(char *input){
-    // Here we write with a delay 
-    int i=0; 
-    while(input[i] != '0'){
-        Keyboard.press(input[i]); 
-        delay(_delay/2); 
-        Keyboard.release(input[i]);
-        i++; 
-    }
+void RubberTeensy::Write(String input){
+    Keyboard.print(input); 
+    delay(_delay);
+    Keyboard.press(KEY_RETURN);
+    delay(_delay);
+    Keyboard.release(KEY_RETURN);
+    delay(_delay);
 }
 /* ==== EVIL ==== */ 
 

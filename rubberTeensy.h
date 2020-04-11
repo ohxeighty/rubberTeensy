@@ -23,10 +23,12 @@ class RubberTeensy{
 
         /* Helper Functions */
         void OpenCMD(int8_t method=0, bool admin=0); 
+        void RunCommand(String command, int8_t method=0); 
         void HideWindow(); 
         void RepeatKey(char key, int repeat);  
-        void Blink(int duration); 
-        void Write(char *input);
+        void Blink(int duration=500); 
+        void Write(String input);
+
         /* Evil */ 
         void AddUser(char *username, char *pass, bool admin=0); 
         void Shutdown(); 
