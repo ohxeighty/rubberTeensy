@@ -22,11 +22,11 @@ class RubberTeensy{
         int8_t GetLEDPin();
 
         /* Helper Functions */
-        void OpenCMD(bool admin=0, int8_t method=0); 
-        void HideCurWindow(); 
+        void OpenCMD(int8_t method=0, bool admin=0); 
+        void HideWindow(); 
         void RepeatKey(char key, int repeat);  
         void Blink(int duration); 
-
+        void Write(char *input);
         /* Evil */ 
         void AddUser(char *username, char *pass, bool admin=0); 
         void Shutdown(); 

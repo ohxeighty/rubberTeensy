@@ -9,8 +9,9 @@
 
 /* Initialise instance of RubberTeensy */
 RubberTeensy::RubberTeensy(int delayMs, int ledPin, int initDelay){
-    _delay = delayMs;
-    _LED_Pin = ledPin;
+    _LED_Pin = 0;
+    this->SetDelay(delayMs);  
+    this->SetLEDPin(ledPin); 
    // give some time for the usb to stop shitting itself  
     delay(initDelay); 
 }
@@ -52,32 +53,44 @@ int8_t RubberTeensy::GetLEDPin(){
 }
 
 /* Open CMD and run command
- * Bool - Try open as admin if supported by method
- * Modes: 
+ * methods: 
  * 0 - Press the Windows Key (KEY_LEFT_GUI) to open the context key, 
  * type cmd, then press enter. Then type in command and press enter. 
+ * admin - Try open as admin if supported by method
  */
-void RubberTeensy::OpenCMD(bool admin, int8_t method){
-	Keyboard.begin(); 
+void RubberTeensy::OpenCMD(int8_t method, bool admin){
+	Keyboard.begin();
     switch(method) {
 	case 0:
 		if(admin){
-            Keyboard.write(KEY_LEFT_GUI); 
-            delay(_delay); 
+            Keyboard.press(KEY_LEFT_GUI); 
+            delay(_delay*3.0); 
+            Keyboard.release(KEY_LEFT_GUI);
+            delay(_delay*3.0);
             Keyboard.print("cmd");
+            delay(_delay*3.0); 
             Keyboard.press(KEY_LEFT_CTRL); 
             Keyboard.press(KEY_LEFT_SHIFT);
+            delay(_delay);
             Keyboard.press(KEY_RETURN);
             Keyboard.releaseAll();
-            // Defaults to no selection 
-            Keyboard.write(KEY_LEFT_ARROW);
-            Keyboard.write(KEY_RETURN);
+            delay(_delay);
+            // Defaults to no in UAC prompt  
+            Keyboard.press(KEY_LEFT_ARROW);
+            delay(_delay);
+            Keyboard.press(KEY_RETURN);
             delay(_delay);
         } else {
-            Keyboard.write(KEY_LEFT_GUI);
+            Keyboard.press(KEY_LEFT_GUI);
+            delay(_delay*3.0);
+            Keyboard.release(KEY_LEFT_GUI);
+            delay(_delay*3.0);
+            Keyboard.print("cmd");
+            delay(_delay*3.0);
+            Keyboard.press(KEY_RETURN); 
             delay(_delay);
-            Keyboard.println("cmd");
-            delay(_delay);
+            Keyboard.release(KEY_RETURN);
+            delay(_delay); 
         }
         break;	
 	default:
@@ -88,14 +101,18 @@ void RubberTeensy::OpenCMD(bool admin, int8_t method){
 }
 
 /* Hide the current window by dragging it down */ 
-void RubberTeensy::HideCurWindow(){
+void RubberTeensy::HideWindow(){
     Keyboard.begin();
     Keyboard.press(KEY_LEFT_ALT);
     Keyboard.press(' ');
+    delay(_delay);
     Keyboard.releaseAll();
-    Keyboard.write('m'); 
+    Keyboard.press('m');
+    delay(_delay); 
+    Keyboard.release('m');  
     Mouse.begin();
     Mouse.press();
+    delay(_delay); 
     // mouse move signed char, -128 - 127 
     Mouse.move(0, 127); 
     Mouse.end(); 
@@ -106,16 +123,28 @@ void RubberTeensy::HideCurWindow(){
 /* Repeat Keypress */
 void RubberTeensy::RepeatKey(char key, int repeat){
     for(int i =0; i < repeat; i++){
-        Keyboard.write(key); 
-        delay(_delay/5); 
+        Keyboard.press(key); 
+        delay(_delay/5);
+        Keyboard.release(key);  
     }
 }
 
-
+/* Blink */ 
 void RubberTeensy::Blink(int duration){
     digitalWrite(_LED_Pin, HIGH); 
     delay(500); 
     digitalWrite(_LED_Pin, LOW); 
+}
+
+void RubberTeensy::Write(char *input){
+    // Here we write with a delay 
+    int i=0; 
+    while(input[i] != '0'){
+        Keyboard.press(input[i]); 
+        delay(_delay/2); 
+        Keyboard.release(input[i]);
+        i++; 
+    }
 }
 /* ==== EVIL ==== */ 
 
