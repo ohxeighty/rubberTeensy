@@ -14,7 +14,7 @@
 
 class RubberTeensy{
     public:
-        RubberTeensy(int delayMs=100, int ledPin=13, int initDelay=100);
+        RubberTeensy(int delayMs=150, int ledPin=13, int initDelay=100);
 
         void SetDelay(int delay);
         void SetLEDPin(int pin);
@@ -23,15 +23,15 @@ class RubberTeensy{
 
         /* Helper Functions */
         void OpenCMD(int8_t method=0, bool admin=0); 
-        void RunCommand(String command, int8_t method=0); 
+        void RunCommand(const char *command, int8_t method=0, bool admin=0); 
         void HideWindow(); 
         void RepeatKey(char key, int repeat);  
         void Blink(int duration=500); 
-        void Write(String input);
+        void Write(const char *input);
 
         /* Evil */ 
-        void AddUser(char *username, char *pass, bool admin=0); 
-        void Shutdown(); 
+        void AddUser(const char *username, const char *pass, bool admin=0); 
+        void Shutdown(int delay); 
     private:
         int _delay; 
         int8_t _LED_Pin; 
